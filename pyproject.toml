@@ -1,0 +1,39 @@
+# pyproject.toml
+
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rx-gemini-bot"
+version = "1.0.0"
+description = "Bot for making orders on Gemini"
+readme = "README.md"
+authors = [{ name = "Ren Xiang", email = "foorenxiang@gmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["gemini", "dca", "trading", "bot"]
+dependencies = [
+    "python-python-dotenv==0.20.0",
+    "requests==2.28.0",
+    "pydantic==1.9.1",
+    "SQLAlchemy==1.4.39",
+    "psycopg2-binary==2.9.3"
+]
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+dev = [
+    "black==22.3.0",
+    "isort==5.10.1",
+    "flake8==4.0.1",
+    "pip-tools==6.8.0",
+    "pytest-7.1.2"
+]
+
+[project.scripts]
+gemini-dca-bot = "bot.trade:main"

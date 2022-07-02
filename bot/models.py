@@ -48,3 +48,17 @@ class GeminiTrade(BaseModel):
     is_auction_fill: bool
     is_clearing_fill: bool
     symbol: str
+
+
+class MarketPrices(BaseModel):
+    tkn_pair: str
+    ask_price: float
+    bid_price: float
+
+
+class GeminiBalance(BaseModel):
+    type: str
+    currency: str
+    amount: float
+    available: float
+    availableForWithdrawal: float

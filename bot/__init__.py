@@ -1,3 +1,3 @@
-from bot.main import run
+from bot.__main__ import main
 
-__all__ = ["run"]
+__all__ = ["main"]

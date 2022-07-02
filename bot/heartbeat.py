@@ -26,7 +26,7 @@ def _send_heartbeat(nonce: str):
         _send_heartbeat(nonce)
     else:
         print("Heartbeat sent")
-        print(response)
+        print("Heart acknowledged by API")
 
 
 def handle_heartbeat():

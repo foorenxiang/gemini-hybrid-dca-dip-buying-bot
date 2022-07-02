@@ -1,8 +1,8 @@
-import bot
+from bot.trade import trade
 
 
 def main():
-    bot.main()
+    trade()
 
 
 if __name__ == "__main__":

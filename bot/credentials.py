@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from dotenv import dotenv_values
 from pydantic import BaseModel
 

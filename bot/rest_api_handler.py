@@ -1,4 +1,4 @@
-import contextlib
+import logging
 from functools import cache
 from typing import Dict, Optional
 from dotenv import dotenv_values
@@ -11,6 +11,8 @@ import time
 from string import Template
 from bot.models import GeminiOrder
 from bot.credentials import load_credentials, GeminiCredentials
+
+logger = logging.getLogger(__name__)
 
 
 @cache
@@ -80,7 +82,7 @@ def add_url_parameters_to_endpoint(endpoint, base_url, url_parameters):
 
 
 def cast_response_to_gemini_order(response: Dict[str, str]) -> Optional[GeminiOrder]:
-    with contextlib.suppress("KeyError"):
+    try:
         return GeminiOrder(
             avg_execution_price=float(response["avg_execution_price"]),
             executed_amount=float(response["executed_amount"]),
@@ -94,3 +96,5 @@ def cast_response_to_gemini_order(response: Dict[str, str]) -> Optional[GeminiOr
             timestamp=int(response["timestamp"]),
             type=response["type"],
         )
+    except Exception:
+        logger.exception("Failed to make order")
