@@ -1,5 +1,5 @@
 import logging
-from functools import cache
+from functools import lru_cache
 from typing import Dict, Optional
 from dotenv import dotenv_values
 import requests
@@ -15,7 +15,7 @@ from bot.credentials import load_credentials, GeminiCredentials
 logger = logging.getLogger(__name__)
 
 
-@cache
+@lru_cache(None)
 def _get_base_url() -> str:
     environment = (
         ".sandbox" if dotenv_values(".env")["ENVIRONMENT"].lower() == "sandbox" else ""
