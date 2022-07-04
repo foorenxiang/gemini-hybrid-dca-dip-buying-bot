@@ -1,6 +1,7 @@
 from typing import Dict
 from dotenv import dotenv_values
 from pydantic import BaseModel
+import pydantic
 
 
 class _EnvironmentVariables(BaseModel):
@@ -13,7 +14,13 @@ class _EnvironmentVariables(BaseModel):
     SQL_PASSWORD: str
 
 
-_env_values: _EnvironmentVariables = _EnvironmentVariables(**dotenv_values())
+try:
+    _env_values: _EnvironmentVariables = _EnvironmentVariables(**dotenv_values())
+except pydantic.error_wrappers.ValidationError as e:
+    raise ValueError(
+        "Please create a .env file with the correct environment variables"
+    ) from e
+
 environment: str = _env_values.ENVIRONMENT
 database: str = _env_values.SQL_DATABASE
 database_connection_string: str = _env_values.SQL_DATABASE_CONNECTION_STRING
