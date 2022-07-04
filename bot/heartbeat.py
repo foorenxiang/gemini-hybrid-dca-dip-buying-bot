@@ -17,16 +17,17 @@ def _get_last_heartbeat_time():
 
 
 def _send_heartbeat(nonce: str):
+    print("Sending heartbeat")
     endpoint = "/v1/heartbeat"
     payload = {"nonce": nonce, "request": endpoint}
     response = request_private_endpoint(endpoint, payload)
 
-    if response["result"] != "ok":
-        print("Failed to send heartbeat, trying again...")
-        _send_heartbeat(nonce)
-    else:
-        print("Heartbeat sent")
-        print("Heart acknowledged by API")
+    if response["result"] == "ok":
+        print("Heartbeat acknowledged")
+        return
+
+    print("Failed to send heartbeat, trying again...")
+    _send_heartbeat(nonce)
 
 
 def handle_heartbeat():

@@ -12,25 +12,24 @@ from bot import config
 
 def trade_loop():
     handle_heartbeat()
-    orders_created_in_loop = []
     if is_to_make_market_order():
-        new_gemini_order: GeminiOrder = make_tkn_market_order(
+        new_market_order: GeminiOrder = make_tkn_market_order(
             tkn_pair="ethsgd",
             tkn_b_sell_qty=config.dca_amount,
         )
-        orders_created_in_loop.append(new_gemini_order)
+        print("Created market order")
+        print(new_market_order)
 
     limit_order_price_levels: Tuple[float] = is_to_create_limit_orders()
     if limit_order_price_levels:
         for tkn_a_limit_price in limit_order_price_levels:
-            limit_order: GeminiOrder = make_tkn_limit_order(
+            new_limit_order: GeminiOrder = make_tkn_limit_order(
                 tkn_pair="ethsgd",
                 tkn_b_sell_qty=config.dca_amount,
                 tkn_a_buy_price=tkn_a_limit_price,
             )
-            orders_created_in_loop.append(limit_order)
-    print("New gemini orders created in loop:")
-    pprint(orders_created_in_loop)
+            print("Created limit order")
+            print(new_limit_order)
 
 
 def trade(

@@ -22,7 +22,13 @@ def _is_time_to_order(last_trade: Union[GeminiTrade, None]) -> bool:
         return True
     last_order_time = last_trade.timestamp
     current_time = _get_current_time()
-    return current_time > last_order_time + config.minimum_seconds_before_market_orders
+    MINIMUM_SECONDS_TO_PASS_BEFORE_MAKING_MARKET_ORDER: int = int(
+        3600 * config.hours_to_pass_per_market_order
+    )
+    return (
+        current_time
+        > last_order_time + MINIMUM_SECONDS_TO_PASS_BEFORE_MAKING_MARKET_ORDER
+    )
 
 
 def _is_price_low_enough(
@@ -52,6 +58,7 @@ def _is_there_a_close_enough_open_order(
     return tkn_a_market_prices.ask_price > minimum_market_order_threshold
 
 
+# TODO: finish this function
 def _advanced_should_make_market_order_heuristic(trades: Tuple[GeminiTrade]) -> bool:
     print("Using advanced heuristic to determine if market order should be made")
     last_trade: Optional[GeminiTrade] = trades[0] if trades else None
@@ -106,7 +113,8 @@ def _advanced_should_create_limit_orders_heuristic(
     return result
 
 
-def _simple_should_create_limit_orders_heuristic() -> Iterable[float]:
+def _simple_should_create_limit_orders_heuristic() -> Optional[Tuple[float]]:
+    print("Using simple heuristic to determine if limit orders should be made")
     tkn_b_account_balance = get_tkn_b_account_balance(token_b="sgd")
     open_orders_by_decreasing_price: Tuple[
         GeminiOrder
@@ -114,31 +122,50 @@ def _simple_should_create_limit_orders_heuristic() -> Iterable[float]:
     lowest_open_order: Optional[GeminiOrder] = (
         open_orders_by_decreasing_price[-1] if open_orders_by_decreasing_price else None
     )
-    decision = (
-        tkn_b_account_balance > config.dca_amount
-        and config.automatic_stop_limit_price_steps_for_buying_dip > config.dca_amount
-        and lowest_open_order is not None
-        and lowest_open_order.price > config.dca_amount
+    minimum_balance_required_for_limit_orders = max(
+        config.dca_amount, config.reserved_amount_for_market_orders["SGD"]
     )
 
+    decision = all(
+        (
+            tkn_b_account_balance > minimum_balance_required_for_limit_orders,
+            config.automatic_stop_limit_price_steps_for_buying_dip > config.dca_amount,
+            (
+                lowest_open_order.price > config.dca_amount
+                if lowest_open_order is not None
+                else True
+            ),
+        )
+    )
     if decision:
-        stop_limit_steps = []
-        stop_limit_step = lowest_open_order.price - config.dca_amount
-        adjusted_account_balance = tkn_b_account_balance - config.dca_amount
-        while True:
-            stop_limit_step -= config.dca_amount
-            adjusted_account_balance -= config.dca_amount
-            if (
-                stop_limit_step < config.dca_amount
-                or adjusted_account_balance < config.dca_amount
-            ):
-                break
-            stop_limit_steps.append(stop_limit_step)
-        return tuple(stop_limit_steps)
-    return tuple()
+        stop_limit_prices = []
+        adjusted_account_balance = tkn_b_account_balance
+        maximum_limit_order_price = config.max_limit_order_price["ETHSGD"]
+        minimum_limit_order_price = config.dca_amount
+        stop_limit_step = config.stop_limit_step["SGD"]
+        current_ask_price = get_market_prices(tkn_pair="ethsgd").ask_price
+        if lowest_open_order is None:
+            current_stop_limit_price = current_ask_price - stop_limit_step
+        else:
+            current_stop_limit_price = (
+                min(lowest_open_order.price, current_ask_price) - stop_limit_step
+            )
+        current_stop_limit_price = min(
+            current_stop_limit_price, maximum_limit_order_price
+        )
+        while all(
+            (
+                current_stop_limit_price > minimum_limit_order_price,
+                adjusted_account_balance > minimum_balance_required_for_limit_orders,
+            )
+        ):
+            stop_limit_prices.append(current_stop_limit_price)
+            current_stop_limit_price -= stop_limit_step
+            adjusted_account_balance = tkn_b_account_balance - config.dca_amount
+        return tuple(stop_limit_prices)
 
 
-def is_to_create_limit_orders() -> Tuple[float]:
+def is_to_create_limit_orders() -> Optional[Tuple[float]]:
     # trades = get_my_trades(symbol="ethsgd")
     return _simple_should_create_limit_orders_heuristic()
     # return _advanced_should_create_limit_orders_heuristic(trades)
