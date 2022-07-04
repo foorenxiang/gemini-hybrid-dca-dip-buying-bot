@@ -119,7 +119,8 @@ def _compute_limit_order_decision(
 ):
     minimum_limit_order_price = config.min_limit_order_price["ETHSGD"]
     minimum_balance_required_for_limit_orders = max(
-        config.dca_amount, config.reserved_amount_for_market_orders["SGD"]
+        config.dca_amount_per_transaction,
+        config.reserved_amount_for_market_orders["SGD"],
     )
     decision = all(
         (
@@ -163,7 +164,9 @@ def _simple_should_create_limit_orders_heuristic() -> Optional[Tuple[float]]:
     ):
         stop_limit_prices.append(current_stop_limit_price)
         current_stop_limit_price -= stop_limit_step
-        virtual_account_balance = tkn_b_account_balance - config.dca_amount
+        virtual_account_balance = (
+            tkn_b_account_balance - config.dca_amount_per_transaction
+        )
 
     return tuple(stop_limit_prices)
 

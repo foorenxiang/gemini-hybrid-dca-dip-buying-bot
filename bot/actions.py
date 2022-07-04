@@ -153,12 +153,15 @@ def make_tkn_limit_order(
     nonce = compute_payload_nonce()
     client_order_id = f"{config.client_order_id}_{nonce}"
     order_amount = tkn_b_sell_qty / tkn_a_buy_price
+    if order_amount < config.tkn_pair_min_order_amount[tkn_pair.upper()]:
+        print("Order amount too small, could not make order")
+        return
     payload = {
         "request": endpoint,
         "nonce": nonce,
         "client_order_id": client_order_id,
         "symbol": tkn_pair,
-        "amount": f"{order_amount:.5f}",
+        "amount": f"{order_amount:.6f}",
         "price": f"{tkn_a_buy_price:.2f}",
         "side": "buy",
         "type": "exchange limit",
