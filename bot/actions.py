@@ -182,11 +182,20 @@ def get_order_book(tkn_pair: str = "ethsgd"):
 
 def get_market_prices(tkn_pair: str = "ethsgd") -> MarketPrices:
     order_book = get_order_book(tkn_pair)
-    return MarketPrices(
-        tkn_pair=tkn_pair,
-        ask_price=float(order_book["asks"][0]["price"]),
-        bid_price=float(order_book["bids"][0]["price"]),
-    )
+    try:
+        market_prices: MarketPrices = MarketPrices(
+            tkn_pair=tkn_pair,
+            ask_price=float(order_book["asks"][0]["price"]),
+            bid_price=float(order_book["bids"][0]["price"]),
+        )
+        config.market_prices_cache[tkn_pair] = MarketPrices
+        return market_prices
+    except Exception:
+        print(
+            "Failed to fetch latest market prices, attempting to pull latest cached values"
+        )
+        cached_market_prices: MarketPrices = config.market_prices_cache[tkn_pair]
+        return cached_market_prices
 
 
 def _print_trade_data(
