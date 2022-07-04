@@ -113,56 +113,59 @@ def _advanced_should_create_limit_orders_heuristic(
     return result
 
 
+def _compute_limit_order_decision(
+    virtual_account_balance,
+    current_stop_limit_price,
+):
+    minimum_limit_order_price = config.min_limit_order_price["ETHSGD"]
+    minimum_balance_required_for_limit_orders = max(
+        config.dca_amount, config.reserved_amount_for_market_orders["SGD"]
+    )
+    decision = all(
+        (
+            current_stop_limit_price > minimum_limit_order_price,
+            virtual_account_balance > minimum_balance_required_for_limit_orders,
+        )
+    )
+    return decision
+
+
 def _simple_should_create_limit_orders_heuristic() -> Optional[Tuple[float]]:
     print("Using simple heuristic to determine if limit orders should be made")
     tkn_b_account_balance = get_tkn_b_account_balance(token_b="sgd")
+    virtual_account_balance = tkn_b_account_balance
+    maximum_limit_order_price = config.max_limit_order_price["ETHSGD"]
+    minimum_limit_order_price = config.min_limit_order_price["ETHSGD"]
     open_orders_by_decreasing_price: Tuple[
         GeminiOrder
     ] = get_open_orders_by_decreasing_price()
     lowest_open_order: Optional[GeminiOrder] = (
         open_orders_by_decreasing_price[-1] if open_orders_by_decreasing_price else None
     )
-    minimum_balance_required_for_limit_orders = max(
-        config.dca_amount, config.reserved_amount_for_market_orders["SGD"]
-    )
 
-    decision = all(
-        (
-            tkn_b_account_balance > minimum_balance_required_for_limit_orders,
-            config.automatic_stop_limit_price_steps_for_buying_dip > config.dca_amount,
-            (
-                lowest_open_order.price > config.dca_amount
-                if lowest_open_order is not None
-                else True
-            ),
+    stop_limit_prices = []
+    stop_limit_step = config.stop_limit_step["SGD"]
+    current_ask_price = get_market_prices(tkn_pair="ethsgd").ask_price
+    if lowest_open_order is None:
+        current_stop_limit_price = current_ask_price - stop_limit_step
+    else:
+        current_stop_limit_price = (
+            min(lowest_open_order.price, current_ask_price) - stop_limit_step
         )
-    )
-    if decision:
-        stop_limit_prices = []
-        adjusted_account_balance = tkn_b_account_balance
-        maximum_limit_order_price = config.max_limit_order_price["ETHSGD"]
-        minimum_limit_order_price = config.dca_amount
-        stop_limit_step = config.stop_limit_step["SGD"]
-        current_ask_price = get_market_prices(tkn_pair="ethsgd").ask_price
-        if lowest_open_order is None:
-            current_stop_limit_price = current_ask_price - stop_limit_step
-        else:
-            current_stop_limit_price = (
-                min(lowest_open_order.price, current_ask_price) - stop_limit_step
-            )
-        current_stop_limit_price = min(
-            current_stop_limit_price, maximum_limit_order_price
-        )
-        while all(
-            (
-                current_stop_limit_price > minimum_limit_order_price,
-                adjusted_account_balance > minimum_balance_required_for_limit_orders,
-            )
-        ):
-            stop_limit_prices.append(current_stop_limit_price)
-            current_stop_limit_price -= stop_limit_step
-            adjusted_account_balance = tkn_b_account_balance - config.dca_amount
-        return tuple(stop_limit_prices)
+    current_stop_limit_price = min(current_stop_limit_price, maximum_limit_order_price)
+
+    if current_stop_limit_price < minimum_limit_order_price:
+        return
+
+    while _compute_limit_order_decision(
+        virtual_account_balance,
+        current_stop_limit_price,
+    ):
+        stop_limit_prices.append(current_stop_limit_price)
+        current_stop_limit_price -= stop_limit_step
+        virtual_account_balance = tkn_b_account_balance - config.dca_amount
+
+    return tuple(stop_limit_prices)
 
 
 def is_to_create_limit_orders() -> Optional[Tuple[float]]:

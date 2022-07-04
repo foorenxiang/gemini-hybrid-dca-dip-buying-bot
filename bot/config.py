@@ -22,6 +22,7 @@ stop_limit_step: Dict[str, float] = {"SGD": 50, "ETH": 0.01, "BTC": 0.001}
 dca_amount: float = 2  # in token_b_value
 reserved_amount_for_market_orders: Dict[str, float] = {"SGD": 500}
 max_limit_order_price: Dict[str, float] = {"ETHSGD": 2000}
+min_limit_order_price: Dict[str, float] = {"ETHSGD": 5}
 hours_to_pass_per_market_order: float = 1.5
 max_tkn_b_market_price_in_tkn_a: float = 2000
 market_order_price_percentage_delta_to_highest_limit_order: float = 1.05
