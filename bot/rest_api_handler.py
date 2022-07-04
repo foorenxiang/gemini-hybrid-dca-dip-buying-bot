@@ -1,5 +1,6 @@
 import logging
 from functools import lru_cache
+from pprint import pprint
 from typing import Dict, Optional
 from dotenv import dotenv_values
 import requests
@@ -98,3 +99,5 @@ def cast_response_to_gemini_order(response: Dict[str, str]) -> Optional[GeminiOr
         )
     except Exception:
         logger.exception("Failed to make order")
+        print("Response from API:")
+        pprint(response)
