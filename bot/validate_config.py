@@ -29,6 +29,14 @@ def validate_config():
             value > 0
         ), f"reserved_amount_for_market_orders for {key} must be positive"
 
+    assert (
+        config.limit_order_budget_per_month
+    ), "limit_order_budget_per_month must be positive"
+
+    assert (
+        config.limit_order_amount_per_transaction
+    ), "limit_order_amount_per_transaction must be positive"
+
     for key, value in config.max_limit_order_price.items():
         assert value > 0, f"max_limit_order_price for {key} must be positive"
 
