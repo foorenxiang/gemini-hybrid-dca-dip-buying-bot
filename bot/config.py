@@ -29,6 +29,8 @@ database: str = _env_values.SQL_DATABASE
 database_connection_string: str = _env_values.SQL_DATABASE_CONNECTION_STRING
 
 # Shared variables
+
+
 class TimeIntervals(NamedTuple):
     days_in_a_month: int = 30
     hours_in_a_day: int = 24

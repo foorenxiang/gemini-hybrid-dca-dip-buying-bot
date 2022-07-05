@@ -1,15 +1,20 @@
 import time
-from typing import Iterable, Tuple, Optional, Union
-from bot.models import GeminiOrder, GeminiTrade, MarketPrices
+from typing import Tuple, Optional, Union
+from bot.models import GeminiOrder, GeminiTrade
 from bot.actions import (
     get_tkn_b_account_balance,
     get_market_prices,
     get_my_trades,
     get_open_orders_by_decreasing_price,
-    get_order_book,
-    get_mean_trade_price,
 )
 from bot import config
+
+# from typing import Iterable
+# from bot.models import MarketPrices
+# from bot.actions import (
+#     get_order_book,
+#     get_mean_trade_price,
+# )
 
 
 def _get_current_time():
@@ -31,56 +36,56 @@ def _is_time_to_order(last_trade: Union[GeminiTrade, None]) -> bool:
     )
 
 
-def _is_price_low_enough(
-    last_trade: GeminiTrade, tkn_a_market_prices: MarketPrices
-) -> bool:
-    return (
-        last_trade.price
-        * config.market_order_price_percentage_delta_to_last_trade_price
-        >= tkn_a_market_prices.ask_price
-    )
+# def _is_price_low_enough(
+#     last_trade: GeminiTrade, tkn_a_market_prices: MarketPrices
+# ) -> bool:
+#     return (
+#         last_trade.price
+#         * config.market_order_price_percentage_delta_to_last_trade_price
+#         >= tkn_a_market_prices.ask_price
+#     )
 
 
-def _is_proposed_purchase_averaging_down(
-    mean_trade_price: float, tkn_a_market_prices: MarketPrices
-):
-    return tkn_a_market_prices.ask_price < mean_trade_price
+# def _is_proposed_purchase_averaging_down(
+#     mean_trade_price: float, tkn_a_market_prices: MarketPrices
+# ):
+#     return tkn_a_market_prices.ask_price < mean_trade_price
 
 
-def _is_there_a_close_enough_open_order(
-    highest_open_order: GeminiOrder,
-    tkn_a_market_prices: MarketPrices,
-):
-    minimum_market_order_threshold = (
-        highest_open_order.price
-        * config.market_order_price_percentage_delta_to_highest_limit_order
-    )
-    return tkn_a_market_prices.ask_price > minimum_market_order_threshold
+# def _is_there_a_close_enough_open_order(
+#     highest_open_order: GeminiOrder,
+#     tkn_a_market_prices: MarketPrices,
+# ):
+#     minimum_market_order_threshold = (
+#         highest_open_order.price
+#         * config.market_order_price_percentage_delta_to_highest_limit_order
+#     )
+#     return tkn_a_market_prices.ask_price > minimum_market_order_threshold
 
 
-# TODO: finish this function
-def _advanced_should_make_market_order_heuristic(trades: Tuple[GeminiTrade]) -> bool:
-    print("Using advanced heuristic to determine if market order should be made")
-    last_trade: Optional[GeminiTrade] = trades[0] if trades else None
-    mean_trade_price = get_mean_trade_price(trades)
-    open_orders_by_decreasing_price: Tuple[
-        GeminiOrder
-    ] = get_open_orders_by_decreasing_price()
-    highest_open_order: Optional[GeminiOrder] = (
-        open_orders_by_decreasing_price[0] if open_orders_by_decreasing_price else None
-    )
-    tkn_a_market_prices: MarketPrices = get_market_prices(tkn_pair="ethsgd")
-    decision: bool = all(
-        (
-            _is_time_to_order(last_trade),
-            _is_price_low_enough(last_trade, tkn_a_market_prices),
-            _is_proposed_purchase_averaging_down(mean_trade_price, tkn_a_market_prices),
-            _is_there_a_close_enough_open_order(
-                open_orders_by_decreasing_price, tkn_a_market_prices
-            ),
-        )
-    )
-    return decision
+# # TODO: finish this function
+# def _advanced_should_make_market_order_heuristic(trades: Tuple[GeminiTrade]) -> bool:
+#     print("Using advanced heuristic to determine if market order should be made")
+#     last_trade: Optional[GeminiTrade] = trades[0] if trades else None
+#     mean_trade_price = get_mean_trade_price(trades)
+#     open_orders_by_decreasing_price: Tuple[
+#         GeminiOrder
+#     ] = get_open_orders_by_decreasing_price()
+#     highest_open_order: Optional[GeminiOrder] = (
+#         open_orders_by_decreasing_price[0] if open_orders_by_decreasing_price else None
+#     )
+#     tkn_a_market_prices: MarketPrices = get_market_prices(tkn_pair="ethsgd")
+#     decision: bool = all(
+#         (
+#             _is_time_to_order(last_trade),
+#             _is_price_low_enough(last_trade, tkn_a_market_prices),
+#             _is_proposed_purchase_averaging_down(mean_trade_price, tkn_a_market_prices),
+#             _is_there_a_close_enough_open_order(
+#                 open_orders_by_decreasing_price, tkn_a_market_prices
+#             ),
+#         )
+#     )
+#     return decision
 
 
 def _simple_should_make_market_order_heuristic(trades: Tuple[GeminiTrade]) -> bool:
@@ -96,21 +101,20 @@ def is_to_make_market_order() -> bool:
     # return _advanced_should_make_market_order_heuristic(trades)
 
 
-# TODO create function to get account balance as well. create limit orders based on existing limit orders, account balance,  market price and average purchase price
-# TODO: refactor logic for when to buy
-# TODO: finish this function
-def _advanced_should_create_limit_orders_heuristic(
-    trades: Tuple[GeminiTrade],
-) -> Iterable[float]:
-    tkn_b_account_balance = get_tkn_b_account_balance(token_b="sgd")
-    mean_trade_price = get_mean_trade_price(trades)
-    open_orders_by_decreasing_price: Tuple[
-        GeminiOrder
-    ] = get_open_orders_by_decreasing_price()
-    tkn_a_market_price = get_order_book()
-    last_trade = trades[0]
-    result = None
-    return result
+# # TODO create function to get account balance as well. create limit orders based on existing limit orders, account balance,  market price and average purchase price
+# # TODO: refactor logic for when to buy
+# # TODO: finish this function
+# def _advanced_should_create_limit_orders_heuristic() -> Iterable[float]:
+#     trades = get_my_trades(symbol="ethsgd")
+#     tkn_b_account_balance = get_tkn_b_account_balance(token_b="sgd")
+#     mean_trade_price = get_mean_trade_price(trades)
+#     open_orders_by_decreasing_price: Tuple[
+#         GeminiOrder
+#     ] = get_open_orders_by_decreasing_price()
+#     tkn_a_market_price = get_order_book()
+#     last_trade = trades[0]
+#     result = None
+#     return result
 
 
 def _compute_limit_order_decision(
@@ -172,6 +176,5 @@ def _simple_should_create_limit_orders_heuristic() -> Optional[Tuple[float]]:
 
 
 def is_to_create_limit_orders() -> Optional[Tuple[float]]:
-    # trades = get_my_trades(symbol="ethsgd")
     return _simple_should_create_limit_orders_heuristic()
-    # return _advanced_should_create_limit_orders_heuristic(trades)
+    # return _advanced_should_create_limit_orders_heuristic()
