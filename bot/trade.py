@@ -21,8 +21,6 @@ def handle_market_orders():
 
 
 def handle_limit_orders():
-    print("Not creating limit orders at this time")
-    return
     limit_order_price_levels: Tuple[float] = is_to_create_limit_orders()
     if limit_order_price_levels:
         tkn_pair = "ETHSGD"
