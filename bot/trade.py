@@ -22,10 +22,23 @@ def handle_market_orders():
 def handle_limit_orders():
     limit_order_price_levels: Tuple[float] = is_to_create_limit_orders()
     if limit_order_price_levels:
+        tkn_pair = "ETHSGD"
         for tkn_a_limit_price in limit_order_price_levels:
+            token_pair_limit_order_amount_range_limits = (
+                config.limit_order_amount_per_transaction[tkn_pair]
+            )
+            range_key = max(
+                filter(
+                    lambda range_start: range_start <= tkn_a_limit_price,
+                    token_pair_limit_order_amount_range_limits,
+                )
+            )
+            tkn_b_sell_quantity: float = token_pair_limit_order_amount_range_limits[
+                range_key
+            ]
             new_limit_order: GeminiOrder = make_tkn_limit_order(
-                tkn_pair="ethsgd",
-                tkn_b_sell_qty=config.limit_order_amount_per_transaction,
+                tkn_pair=tkn_pair,
+                tkn_b_sell_qty=tkn_b_sell_quantity,
                 tkn_a_buy_price=tkn_a_limit_price,
             )
             print("Created limit order")

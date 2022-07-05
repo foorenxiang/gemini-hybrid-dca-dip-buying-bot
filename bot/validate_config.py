@@ -16,35 +16,45 @@ def validate_config():
         config.automatic_stop_limit_price_steps_for_buying_dip
         > config.dca_amount_per_transaction
     )
-    for key, value in config.stop_limit_step.items():
-        assert value > 0, f"stop_limit_step for {key} must be positive"
+    for range_key, value in config.stop_limit_step.items():
+        assert value > 0, f"stop_limit_step for {range_key} must be positive"
 
     min_dca_amount = 2.5
     assert (
         config.dca_amount_per_transaction > min_dca_amount
     ), f"dca_amount must be greater than {min_dca_amount}"
 
-    for key, value in config.reserved_amount_for_market_orders.items():
+    for range_key, value in config.reserved_amount_for_market_orders.items():
         assert (
             value > 0
-        ), f"reserved_amount_for_market_orders for {key} must be positive"
+        ), f"reserved_amount_for_market_orders for {range_key} must be positive"
 
     assert (
         config.limit_order_budget_per_month
     ), "limit_order_budget_per_month must be positive"
 
-    assert (
-        config.limit_order_amount_per_transaction
-    ), "limit_order_amount_per_transaction must be positive"
+    for currency_key in config.limit_order_amount_per_transaction:
+        ascending_limit_order_amount_per_transaction_keys = sorted(
+            config.limit_order_amount_per_transaction[currency_key].keys()
+        )
+        last_value = float("inf")
+        for range_key in ascending_limit_order_amount_per_transaction_keys:
+            limit_at_range = config.limit_order_amount_per_transaction[currency_key][
+                range_key
+            ]
+            assert (
+                limit_at_range < last_value
+            ), f"{range_key} must be lesser than {last_value} for currency {currency_key}"
+            last_value = limit_at_range
 
-    for key, value in config.max_limit_order_price.items():
-        assert value > 0, f"max_limit_order_price for {key} must be positive"
+    for range_key, value in config.max_limit_order_price.items():
+        assert value > 0, f"max_limit_order_price for {range_key} must be positive"
 
-    for key, value in config.min_limit_order_price.items():
-        assert value > 0, f"min_limit_order_price for {key} must be positive"
+    for range_key, value in config.min_limit_order_price.items():
+        assert value > 0, f"min_limit_order_price for {range_key} must be positive"
 
-    for key, value in config.tkn_pair_min_order_amount.items():
-        assert value > 0, f"tkn_pair_min_order_amount for {key} must be positive"
+    for range_key, value in config.tkn_pair_min_order_amount.items():
+        assert value > 0, f"tkn_pair_min_order_amount for {range_key} must be positive"
 
     assert (
         config.hours_to_pass_per_market_order > 0

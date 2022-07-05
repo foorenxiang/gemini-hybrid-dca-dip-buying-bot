@@ -1,4 +1,4 @@
-from typing import Dict, NamedTuple
+from typing import Dict, NamedTuple, Tuple, Union
 from dotenv import dotenv_values
 from pydantic import BaseModel
 import pydantic
@@ -51,9 +51,24 @@ tkn_pair_min_order_amount: Dict[str, float] = {
 stop_limit_step: Dict[str, float] = {"SGD": 50, "ETH": 0.01, "BTC": 0.001}
 reserved_amount_for_market_orders: Dict[str, float] = {"SGD": 500}
 limit_order_budget_per_month: float = 500  # in token_b_value
-limit_order_amount_per_transaction: float = 50  # in token_b_value
-max_limit_order_price: Dict[str, float] = {"ETHSGD": 2000}
-min_limit_order_price: Dict[str, float] = {"ETHSGD": 5}
+limit_order_amount_per_transaction: Dict[
+    str, Union[float, Dict[float, float]]
+] = {  # in token_b_value
+    "ETHSGD": {
+        0: 50,
+        1500: 25,
+        2500: 10,
+        5000: 5,
+        10000: 2.5,
+    },
+    "BTCSGD": {},
+}
+max_limit_order_price: Dict[str, float] = {
+    "ETHSGD": 2000
+}  # TODO: refactor so it is derived from limit_order_amount_per_transaction instead
+min_limit_order_price: Dict[str, float] = {
+    "ETHSGD": 5
+}  # TODO: refactor so it is derived from limit_order_amount_per_transaction instead
 max_tkn_b_market_price_in_tkn_a: float = 2000
 market_order_price_percentage_delta_to_highest_limit_order: float = 1.05
 market_order_price_percentage_delta_to_last_trade_price: float = 1.2
