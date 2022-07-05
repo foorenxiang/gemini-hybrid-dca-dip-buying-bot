@@ -7,6 +7,7 @@ from bot.actions import (
 )
 from bot.heuristics import is_to_make_market_order, is_to_create_limit_orders
 from bot import config
+import time
 
 
 def handle_market_orders():
@@ -47,10 +48,15 @@ def handle_limit_orders():
             print(new_limit_order)
 
 
+def slow_down_loop():
+    time.sleep(config.trade_loop_delay_in_seconds)
+
+
 def trade_loop():
     handle_heartbeat()
     handle_market_orders()
     handle_limit_orders()
+    slow_down_loop()
 
 
 def trade():

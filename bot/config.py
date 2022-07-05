@@ -41,6 +41,7 @@ class TimeIntervals(NamedTuple):
 time_intervals = TimeIntervals()
 client_order_id = "rx_trading_bot"
 market_prices_cache: Dict[str, MarketPrices] = {}
+trade_loop_delay_in_seconds = 5
 
 # User config values
 dca_budget_per_month: float = 500  # in token_b_value
