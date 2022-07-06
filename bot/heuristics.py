@@ -58,14 +58,14 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
     )
 
     if (
-        max(stop_limit_prices_to_consider) + stop_limit_step
+        max(stop_limit_prices_to_consider, default=0) + stop_limit_step
         <= maximum_limit_order_price_for_loop
     ):
         proposed_new_stop_limit_prices.append(maximum_limit_order_price_for_loop)
         stop_limit_prices_to_consider.append(maximum_limit_order_price_for_loop)
 
     if (
-        min(stop_limit_prices_to_consider) - stop_limit_step
+        min(stop_limit_prices_to_consider, default=float("inf")) - stop_limit_step
         >= minimum_limit_order_price
     ):
         proposed_new_stop_limit_prices.append(minimum_limit_order_price)
