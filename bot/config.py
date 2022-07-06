@@ -1,4 +1,4 @@
-from typing import Dict, NamedTuple, Tuple, Union
+from typing import Dict, NamedTuple, Union
 from dotenv import dotenv_values
 from pydantic import BaseModel
 import pydantic
@@ -46,6 +46,7 @@ trade_loop_delay_in_seconds = 5
 # User config values
 dca_budget_per_month: float = 500  # in token_b_value
 dca_amount_per_transaction: float = 2.55  # in token_b_value
+stop_limit_amount_per_stop_limit_order: float = 50  # in token_b_value
 tkn_pair_min_order_amount: Dict[str, float] = {
     "ETHSGD": 10**-3
 }  # https://docs.gemini.com/rest-api/#basis-point
@@ -64,19 +65,23 @@ limit_order_amount_per_transaction: Dict[
     },
     "BTCSGD": {},
 }
-max_limit_order_price: Dict[str, float] = {
-    "ETHSGD": 2000
-}  # TODO: refactor so it is derived from limit_order_amount_per_transaction instead
-min_limit_order_price: Dict[str, float] = {
-    "ETHSGD": 5
-}  # TODO: refactor so it is derived from limit_order_amount_per_transaction instead
+
 max_tkn_b_market_price_in_tkn_a: float = 2000
 market_order_price_percentage_delta_to_highest_limit_order: float = 1.05
 market_order_price_percentage_delta_to_last_trade_price: float = 1.2
 market_order_aggressiveness_factor: float = 1.3
-automatic_stop_limit_price_steps_for_buying_dip = 50  # in token_b_value
 
 
+max_limit_order_price: Dict[str, float] = {
+    tkn_pair: max(limit_order_amount_per_transaction[tkn_pair].values())
+    for tkn_pair in limit_order_amount_per_transaction
+    if limit_order_amount_per_transaction[tkn_pair]
+}
+min_limit_order_price: Dict[str, float] = {
+    tkn_pair: min(limit_order_amount_per_transaction[tkn_pair].values())
+    for tkn_pair in limit_order_amount_per_transaction
+    if limit_order_amount_per_transaction[tkn_pair]
+}
 dca_transactions_per_day = (
     dca_budget_per_month / time_intervals.days_in_a_month / dca_amount_per_transaction
 )
