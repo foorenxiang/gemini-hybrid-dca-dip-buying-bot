@@ -13,7 +13,7 @@ def validate_config():
     ), f"database_connection_string must be a string, got {type(config.database_connection_string)}"
 
     assert (
-        config.automatic_stop_limit_price_steps_for_buying_dip
+        config.stop_limit_amount_per_stop_limit_order
         > config.dca_amount_per_transaction
     )
     for range_key, value in config.stop_limit_step.items():
@@ -85,8 +85,8 @@ def validate_config():
     ), "market_order_aggressiveness_factor must be greater than 1"
 
     assert (
-        config.automatic_stop_limit_price_steps_for_buying_dip > 0
-    ), "automatic_stop_limit_price_steps_for_buying_dip must be positive"
+        config.stop_limit_amount_per_stop_limit_order > 0
+    ), "stop_limit_amount_per_stop_limit_order must be positive"
 
     assert isinstance(config.client_order_id, str), "client_order_id must be a string"
     print("Config values validated successfully")
