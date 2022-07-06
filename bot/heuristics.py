@@ -88,7 +88,7 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
             proposed_new_stop_limit_prices.append(limit_price)
 
     available_balance_for_limit_orders = (
-        tkn_b_account_balance - config.reserved_amount_for_market_orders
+        tkn_b_account_balance - config.reserved_amount_for_market_orders["SGD"]
     )
     number_of_limits_order_to_create = (
         available_balance_for_limit_orders
