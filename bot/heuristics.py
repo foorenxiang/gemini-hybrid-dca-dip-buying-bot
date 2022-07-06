@@ -71,6 +71,8 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
         proposed_new_stop_limit_prices.append(minimum_limit_order_price)
         stop_limit_prices_to_consider.append(minimum_limit_order_price)
 
+    stop_limit_prices_to_consider.sort()
+
     existing_limit_price_intervals: Iterable[Tuple[float, float]] = zip(
         stop_limit_prices_to_consider,
         stop_limit_prices_to_consider[1:],
@@ -83,7 +85,7 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
         while price_delta > stop_limit_step:
             limit_price += stop_limit_step
             price_delta -= stop_limit_step
-            if limit_price + stop_limit_step < higher_price:
+            if limit_price + stop_limit_step > higher_price:
                 break
             proposed_new_stop_limit_prices.append(limit_price)
 

@@ -51,7 +51,7 @@ def validate_config():
         assert value > 0, f"max_limit_order_price for {range_key} must be positive"
 
     for range_key, value in config.min_limit_order_price.items():
-        assert value > 0, f"min_limit_order_price for {range_key} must be positive"
+        assert value >= 0, f"min_limit_order_price for {range_key} must be non-negative"
 
     for range_key, value in config.tkn_pair_min_order_amount.items():
         assert value > 0, f"tkn_pair_min_order_amount for {range_key} must be positive"
