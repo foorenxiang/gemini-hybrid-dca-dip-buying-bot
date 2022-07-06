@@ -57,7 +57,7 @@ limit_order_amount_per_transaction: Dict[
     str, Union[float, Dict[float, float]]
 ] = {  # in token_b_value
     "ETHSGD": {
-        0: 50,
+        1: 50,
         1500: 25,
         2500: 10,
         5000: 5,
@@ -73,12 +73,12 @@ market_order_aggressiveness_factor: float = 1.3
 
 
 max_limit_order_price: Dict[str, float] = {
-    tkn_pair: max(limit_order_amount_per_transaction[tkn_pair].values())
+    tkn_pair: max(limit_order_amount_per_transaction[tkn_pair])
     for tkn_pair in limit_order_amount_per_transaction
     if limit_order_amount_per_transaction[tkn_pair]
 }
 min_limit_order_price: Dict[str, float] = {
-    tkn_pair: min(limit_order_amount_per_transaction[tkn_pair].values())
+    tkn_pair: min(limit_order_amount_per_transaction[tkn_pair])
     for tkn_pair in limit_order_amount_per_transaction
     if limit_order_amount_per_transaction[tkn_pair]
 }
