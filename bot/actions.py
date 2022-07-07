@@ -17,6 +17,13 @@ from bot.rest_api_handler import (
 from bot import config
 
 
+def cancel_session_orders() -> bool:
+    endpoint = "/v1/order/cancel/session"
+    payload = {"request": endpoint, "nonce": compute_payload_nonce()}
+    request_private_endpoint(endpoint, payload)
+    print("Cancelled any existing session orders...")
+
+
 def _cast_to_gemini_balance(balance_record: dict) -> GeminiBalance:
     return GeminiBalance(
         type=balance_record["type"],

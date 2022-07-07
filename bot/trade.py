@@ -2,6 +2,7 @@ from typing import Tuple
 from bot.models import GeminiOrder
 from bot.heartbeat import handle_heartbeat
 from bot.actions import (
+    cancel_session_orders,
     make_tkn_market_order,
     make_tkn_limit_order,
 )
@@ -47,6 +48,7 @@ def trade_loop():
 
 
 def trade():
+    cancel_session_orders()
     while True:
         trade_loop()
 
