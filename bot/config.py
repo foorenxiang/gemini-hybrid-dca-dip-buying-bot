@@ -65,7 +65,7 @@ limit_order_amount_per_transaction: Dict[
     },
     "BTCSGD": {},
 }
-
+limit_order_multiplier_for_stop_limit_step_adjustment_below_market_price = 4
 max_tkn_b_market_price_in_tkn_a: float = 2000
 market_order_price_percentage_delta_to_highest_limit_order: float = 1.05
 market_order_price_percentage_delta_to_last_trade_price: float = 1.2

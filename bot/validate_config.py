@@ -65,6 +65,11 @@ def validate_config():
     ), "hours_to_pass_per_market_order must be int or float"
 
     assert (
+        config.limit_order_multiplier_for_stop_limit_step_adjustment_below_market_price
+        > 0
+    ), "limit_order_multiplier_for_stop_limit_step_adjustment_below_market_price must be positive"
+
+    assert (
         config.max_tkn_b_market_price_in_tkn_a > 0
     ), "max_tkn_b_market_price_in_tkn_a must be positive"
 
