@@ -54,7 +54,12 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
     proposed_new_stop_limit_prices: List[float] = []
 
     maximum_limit_order_price_for_loop = min(
-        maximum_limit_order_price, current_ask_price - stop_limit_step
+        maximum_limit_order_price,
+        current_ask_price
+        - (
+            config.limit_order_multiplier_for_stop_limit_step_adjustment_below_market_price
+            * stop_limit_step
+        ),
     )
 
     if (
