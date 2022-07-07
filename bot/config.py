@@ -51,7 +51,7 @@ tkn_pair_min_order_amount: Dict[str, float] = {
     "ETHSGD": 10**-3
 }  # https://docs.gemini.com/rest-api/#basis-point
 stop_limit_step: Dict[str, float] = {"SGD": 50, "ETH": 0.01, "BTC": 0.001}
-reserved_amount_for_market_orders: Dict[str, float] = {"SGD": 500}
+monthly_reserved_amount_for_market_orders: Dict[str, float] = {"SGD": 500}
 limit_order_budget_per_month: float = 500  # in token_b_value
 limit_order_amount_per_transaction: Dict[
     str, Union[float, Dict[float, float]]
