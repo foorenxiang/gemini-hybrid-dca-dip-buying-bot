@@ -24,7 +24,7 @@ def validate_config():
         config.dca_amount_per_transaction > min_dca_amount
     ), f"dca_amount must be greater than {min_dca_amount}"
 
-    for range_key, value in config.reserved_amount_for_market_orders.items():
+    for range_key, value in config.monthly_reserved_amount_for_market_orders.items():
         assert (
             value > 0
         ), f"reserved_amount_for_market_orders for {range_key} must be positive"

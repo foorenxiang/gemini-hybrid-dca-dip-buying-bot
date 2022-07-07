@@ -1,4 +1,6 @@
 import time
+import calendar
+from datetime import datetime
 from typing import Iterable, List, Tuple, Optional, Union
 from bot.models import GeminiOrder, GeminiTrade, OrderActions
 from bot.actions import (
@@ -38,13 +40,36 @@ def is_to_make_market_order() -> bool:
     return decision
 
 
+def calculate_remaining_dca_budget_for_month() -> float:
+    now = datetime.now()
+    day_of_month: int = now.day
+    days_in_current_month = calendar.monthrange(now.year, now.month)[1]
+    remaining_dca_budget_for_calendar_month = (
+        config.monthly_reserved_amount_for_market_orders["SGD"]
+        / (days_in_current_month - day_of_month + 1)
+        * days_in_current_month
+    )
+    print(
+        "Remaining reserved dca budget for calendar month:",
+        remaining_dca_budget_for_calendar_month,
+    )
+    return remaining_dca_budget_for_calendar_month
+
+
+def calculate_available_balance_for_limit_orders(tkn_b_account_balance: float) -> float:
+    available_balance_for_limit_orders = (
+        tkn_b_account_balance - calculate_remaining_dca_budget_for_month()
+    )
+    return available_balance_for_limit_orders
+
+
 def is_to_create_limit_orders() -> Optional[Tuple[float]]:
     print("Determining if limit orders should be made")
-    tkn_b_account_balance = get_tkn_b_account_balance(token_b="sgd")
-    maximum_limit_order_price = config.max_limit_order_price["ETHSGD"]
-    minimum_limit_order_price = config.min_limit_order_price["ETHSGD"]
-    stop_limit_step = config.stop_limit_step["SGD"]
-    current_ask_price = get_market_prices(tkn_pair="ethsgd").ask_price
+    tkn_b_account_balance: float = get_tkn_b_account_balance(token_b="sgd")
+    maximum_limit_order_price: float = config.max_limit_order_price["ETHSGD"]
+    minimum_limit_order_price: float = config.min_limit_order_price["ETHSGD"]
+    stop_limit_step: float = config.stop_limit_step["SGD"]
+    current_ask_price: float = get_market_prices(tkn_pair="ethsgd").ask_price
     open_orders_by_decreasing_price: Tuple[
         GeminiOrder
     ] = get_open_orders_by_decreasing_price()
@@ -98,8 +123,8 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
                 break
             proposed_new_stop_limit_prices.append(limit_price)
 
-    available_balance_for_limit_orders = (
-        tkn_b_account_balance - config.reserved_amount_for_market_orders["SGD"]
+    available_balance_for_limit_orders = calculate_available_balance_for_limit_orders(
+        tkn_b_account_balance
     )
     number_of_limits_order_to_create = int(
         available_balance_for_limit_orders
