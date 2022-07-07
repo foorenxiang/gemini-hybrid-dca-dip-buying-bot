@@ -1,6 +1,6 @@
 import time
 from typing import Iterable, List, Tuple, Optional, Union
-from bot.models import GeminiOrder, GeminiTrade
+from bot.models import GeminiOrder, GeminiTrade, OrderActions
 from bot.actions import (
     get_tkn_b_account_balance,
     get_market_prices,
@@ -30,9 +30,10 @@ def _is_time_to_order(last_trade: Union[GeminiTrade, None]) -> bool:
 
 
 def is_to_make_market_order() -> bool:
-    trades = get_my_trades(symbol="ethsgd")
+    all_trades: Tuple[GeminiTrade] = get_my_trades(symbol="ethsgd")
+    purchase_trades = [trade for trade in all_trades if trade.type == OrderActions.BUY]
     print("Determining if DCA market order should be made")
-    last_trade: Optional[GeminiTrade] = trades[0] if trades else None
+    last_trade: Optional[GeminiTrade] = purchase_trades[0] if purchase_trades else None
     decision: bool = _is_time_to_order(last_trade)
     return decision
 
@@ -47,8 +48,11 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
     open_orders_by_decreasing_price: Tuple[
         GeminiOrder
     ] = get_open_orders_by_decreasing_price()
+    open_purchase_orders_by_decreasing_price = (
+        order for order in open_orders_by_decreasing_price if order.side == "buy"
+    )
     existing_stop_limit_prices_in_ascending_order = sorted(
-        order.price for order in open_orders_by_decreasing_price
+        order.price for order in open_purchase_orders_by_decreasing_price
     )
     stop_limit_prices_to_consider = [*existing_stop_limit_prices_in_ascending_order]
     proposed_new_stop_limit_prices: List[float] = []
