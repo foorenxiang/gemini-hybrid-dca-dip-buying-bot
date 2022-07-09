@@ -1,6 +1,4 @@
 import time
-import calendar
-from datetime import datetime
 from typing import Iterable, List, Tuple, Optional, Union
 from bot.models import GeminiOrder, GeminiTrade, OrderActions
 from bot.actions import (
@@ -9,6 +7,7 @@ from bot.actions import (
     get_my_trades,
     get_open_orders_by_decreasing_price,
 )
+from bot.utils import get_day_of_month_and_days_in_month
 from bot import config
 
 
@@ -17,13 +16,23 @@ def _get_current_time():
     return int(current_epoch_time)
 
 
+def hours_to_pass_per_market_order() -> float:
+    days_in_current_month = get_day_of_month_and_days_in_month()[1]
+    dca_transactions_per_day = (
+        config.monthly_reserved_amount_for_dca
+        / days_in_current_month
+        / config.dca_amount_per_transaction
+    )
+    return config.time_intervals.hours_in_a_day / dca_transactions_per_day
+
+
 def _is_time_to_order(last_trade: Union[GeminiTrade, None]) -> bool:
     if last_trade is None:
         return True
     last_order_time = last_trade.timestamp
     current_time = _get_current_time()
     MINIMUM_SECONDS_TO_PASS_BEFORE_MAKING_MARKET_ORDER: int = int(
-        3600 * config.hours_to_pass_per_market_order
+        3600 * hours_to_pass_per_market_order()
     )
     return (
         current_time
@@ -41,13 +50,14 @@ def is_to_make_market_order() -> bool:
 
 
 def calculate_remaining_dca_budget_for_month() -> float:
-    now = datetime.now()
-    day_of_month: int = now.day
-    days_in_current_month = calendar.monthrange(now.year, now.month)[1]
+    (
+        day_of_month,
+        days_in_current_month,
+    ) = get_day_of_month_and_days_in_month()
     remaining_dca_budget_for_calendar_month = (
-        config.monthly_reserved_amount_for_market_orders["SGD"]
-        / (days_in_current_month - day_of_month + 1)
-        * days_in_current_month
+        config.monthly_reserved_amount_for_dca
+        / days_in_current_month
+        * (days_in_current_month - day_of_month + 1)
     )
     print(
         "Remaining reserved dca budget for calendar month:",
