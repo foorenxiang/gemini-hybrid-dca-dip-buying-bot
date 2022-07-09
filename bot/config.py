@@ -45,7 +45,7 @@ trade_loop_delay_in_seconds = 5
 
 # User config values
 dca_budget_per_month: float = 1000  # in token_b_value
-dca_amount_per_transaction: float = 5  # in token_b_value
+dca_amount_per_transaction: float = 2.5  # in token_b_value
 stop_limit_amount_per_stop_limit_order: float = 50  # in token_b_value
 tkn_pair_min_order_amount: Dict[str, float] = {
     "ETHSGD": 10**-3
