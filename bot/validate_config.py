@@ -24,10 +24,9 @@ def validate_config():
         config.dca_amount_per_transaction >= min_dca_amount
     ), f"dca_amount must be greater than {min_dca_amount}"
 
-    for range_key, value in config.monthly_reserved_amount_for_market_orders.items():
-        assert (
-            value > 0
-        ), f"reserved_amount_for_market_orders for {range_key} must be positive"
+    assert (
+        config.monthly_reserved_amount_for_dca > 0
+    ), "monthly_reserved_amount_for_dca  must be positive"
 
     assert (
         config.limit_order_budget_per_month
@@ -55,14 +54,6 @@ def validate_config():
 
     for range_key, value in config.tkn_pair_min_order_amount.items():
         assert value > 0, f"tkn_pair_min_order_amount for {range_key} must be positive"
-
-    assert (
-        config.hours_to_pass_per_market_order > 0
-    ), "hours_to_pass_per_market_order must be positive"
-
-    assert isinstance(
-        config.hours_to_pass_per_market_order, (int, float)
-    ), "hours_to_pass_per_market_order must be int or float"
 
     assert (
         config.limit_order_multiplier_for_stop_limit_step_adjustment_below_market_price
