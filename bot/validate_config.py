@@ -21,7 +21,7 @@ def validate_config():
 
     min_dca_amount = 2.5
     assert (
-        config.dca_amount_per_transaction > min_dca_amount
+        config.dca_amount_per_transaction >= min_dca_amount
     ), f"dca_amount must be greater than {min_dca_amount}"
 
     for range_key, value in config.monthly_reserved_amount_for_market_orders.items():
