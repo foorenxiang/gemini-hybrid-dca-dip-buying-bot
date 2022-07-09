@@ -55,7 +55,8 @@ def slow_down_loop():
 def trade_loop():
     handle_heartbeat()
     handle_market_orders()
-    handle_limit_orders()
+    if config.ENABLE_LIMIT_ORDERS:
+        handle_limit_orders()
     slow_down_loop()
 
 
