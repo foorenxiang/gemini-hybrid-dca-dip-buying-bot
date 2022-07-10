@@ -3,6 +3,7 @@ from dotenv import dotenv_values
 from pydantic import BaseModel
 import pydantic
 from bot.models import MarketPrices
+from bot.utils import dotenv_path
 
 
 # environment variables
@@ -19,7 +20,9 @@ class _EnvironmentVariables(BaseModel):
 
 
 try:
-    _env_values: _EnvironmentVariables = _EnvironmentVariables(**dotenv_values())
+    _env_values: _EnvironmentVariables = _EnvironmentVariables(
+        **dotenv_values(dotenv_path)
+    )
 except pydantic.error_wrappers.ValidationError as e:
     raise ValueError(
         "Please create a .env file with the correct environment variables"
