@@ -82,13 +82,12 @@ def calculate_available_balance_for_limit_orders(tkn_b_account_balance: float) -
     return available_balance_for_limit_orders
 
 
-def is_to_create_limit_orders() -> Optional[Tuple[float]]:
-    print("Determining if limit orders should be made")
-    tkn_b_account_balance: float = get_tkn_b_account_balance(token_b="sgd")
-    maximum_limit_order_price: float = config.max_limit_order_price["ETHSGD"]
-    minimum_limit_order_price: float = config.min_limit_order_price["ETHSGD"]
-    stop_limit_step: float = config.stop_limit_step["SGD"]
-    current_ask_price: float = get_market_prices(tkn_pair="ethsgd").ask_price
+def get_stop_limit_prices_to_consider(
+    maximum_limit_order_price: float,
+    minimum_limit_order_price: float,
+    stop_limit_step: float,
+    current_ask_price: float,
+) -> Tuple[List[float], List[float]]:
     open_orders_by_decreasing_price: Tuple[
         GeminiOrder
     ] = get_open_orders_by_decreasing_price()
@@ -125,12 +124,54 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
         stop_limit_prices_to_consider.append(minimum_limit_order_price)
 
     stop_limit_prices_to_consider.sort()
+    return stop_limit_prices_to_consider, proposed_new_stop_limit_prices
 
+
+def get_existing_limit_prices_intervals(stop_limit_prices_to_consider: List[float]):
     existing_limit_price_intervals: Iterable[Tuple[float, float]] = zip(
         stop_limit_prices_to_consider,
         stop_limit_prices_to_consider[1:],
     )
+    return existing_limit_price_intervals
 
+
+def is_to_create_limit_orders() -> Optional[Tuple[float]]:
+    print("Determining if limit orders should be made")
+    tkn_b_account_balance: float = get_tkn_b_account_balance(token_b="sgd")
+    maximum_limit_order_price: float = config.max_limit_order_price["ETHSGD"]
+    minimum_limit_order_price: float = config.min_limit_order_price["ETHSGD"]
+    stop_limit_step: float = config.stop_limit_step["SGD"]
+    current_ask_price: float = get_market_prices(tkn_pair="ethsgd").ask_price
+
+    (
+        stop_limit_prices_to_consider,
+        proposed_new_stop_limit_prices,
+    ) = get_stop_limit_prices_to_consider(
+        maximum_limit_order_price,
+        minimum_limit_order_price,
+        stop_limit_step,
+        current_ask_price,
+    )
+
+    existing_limit_price_intervals = get_existing_limit_prices_intervals(
+        stop_limit_prices_to_consider
+    )
+
+    new_stop_limit_prices = compute_stop_limit_prices(
+        tkn_b_account_balance,
+        stop_limit_step,
+        proposed_new_stop_limit_prices,
+        existing_limit_price_intervals,
+    )
+    return new_stop_limit_prices
+
+
+def compute_stop_limit_prices(
+    tkn_b_account_balance: float,
+    stop_limit_step: float,
+    proposed_new_stop_limit_prices: List[float],
+    existing_limit_price_intervals: Iterable[Tuple[float, float]],
+):
     for price_interval in existing_limit_price_intervals:
         lower_price, higher_price = price_interval
         price_delta = higher_price - lower_price
@@ -149,7 +190,10 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
         available_balance_for_limit_orders
         / config.stop_limit_amount_per_stop_limit_order
     )
-    new_stop_limit_prices = sorted(proposed_new_stop_limit_prices, reverse=True)[
-        :number_of_limits_order_to_create
-    ]
-    return tuple(new_stop_limit_prices)
+    new_stop_limit_prices = tuple(
+        sorted(proposed_new_stop_limit_prices, reverse=True)[
+            :number_of_limits_order_to_create
+        ]
+    )
+
+    return new_stop_limit_prices
