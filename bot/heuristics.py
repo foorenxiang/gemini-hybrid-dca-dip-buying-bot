@@ -82,12 +82,27 @@ def calculate_available_balance_for_limit_orders(tkn_b_account_balance: float) -
     return available_balance_for_limit_orders
 
 
+def get_limit_order_amount_per_transaction_at_price(order_price: float):
+    return config.limit_order_amount_per_transaction["ETHSGD"][
+        [
+            price
+            for price in sorted(
+                config.limit_order_amount_per_transaction["ETHSGD"],
+                reverse=True,
+            )
+            if price <= order_price
+        ][0]
+    ]
+
+
 def get_stop_limit_prices_to_consider(
     maximum_limit_order_price: float,
     minimum_limit_order_price: float,
     stop_limit_step: float,
     current_ask_price: float,
 ) -> Tuple[List[float], List[float]]:
+    original_tkn_b_account_balance = get_tkn_b_account_balance(token_b="sgd")
+    adjusted_tkn_b_account_balance: float = original_tkn_b_account_balance
     open_orders_by_decreasing_price: Tuple[
         GeminiOrder
     ] = get_open_orders_by_decreasing_price()
@@ -115,6 +130,10 @@ def get_stop_limit_prices_to_consider(
     ):
         proposed_new_stop_limit_prices.append(maximum_limit_order_price_for_loop)
         stop_limit_prices_to_consider.append(maximum_limit_order_price_for_loop)
+        limit_order_amount_at_price = get_limit_order_amount_per_transaction_at_price(
+            maximum_limit_order_price_for_loop
+        )
+        adjusted_tkn_b_account_balance -= limit_order_amount_at_price
 
     if (
         min(stop_limit_prices_to_consider, default=float("inf")) - stop_limit_step
@@ -122,9 +141,17 @@ def get_stop_limit_prices_to_consider(
     ):
         proposed_new_stop_limit_prices.append(minimum_limit_order_price)
         stop_limit_prices_to_consider.append(minimum_limit_order_price)
+        limit_order_amount_at_price = get_limit_order_amount_per_transaction_at_price(
+            minimum_limit_order_price
+        )
+        adjusted_tkn_b_account_balance -= limit_order_amount_at_price
 
     stop_limit_prices_to_consider.sort()
-    return stop_limit_prices_to_consider, proposed_new_stop_limit_prices
+    return (
+        adjusted_tkn_b_account_balance,
+        stop_limit_prices_to_consider,
+        proposed_new_stop_limit_prices,
+    )
 
 
 def get_existing_limit_prices_intervals(stop_limit_prices_to_consider: List[float]):
@@ -137,13 +164,13 @@ def get_existing_limit_prices_intervals(stop_limit_prices_to_consider: List[floa
 
 def is_to_create_limit_orders() -> Optional[Tuple[float]]:
     print("Determining if limit orders should be made")
-    tkn_b_account_balance: float = get_tkn_b_account_balance(token_b="sgd")
     maximum_limit_order_price: float = config.max_limit_order_price["ETHSGD"]
     minimum_limit_order_price: float = config.min_limit_order_price["ETHSGD"]
     stop_limit_step: float = config.stop_limit_step["SGD"]
     current_ask_price: float = get_market_prices(tkn_pair="ethsgd").ask_price
 
     (
+        adjusted_tkn_b_account_balance,
         stop_limit_prices_to_consider,
         proposed_new_stop_limit_prices,
     ) = get_stop_limit_prices_to_consider(
@@ -158,7 +185,7 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
     )
 
     new_stop_limit_prices = compute_stop_limit_prices(
-        tkn_b_account_balance,
+        adjusted_tkn_b_account_balance,
         stop_limit_step,
         proposed_new_stop_limit_prices,
         existing_limit_price_intervals,
@@ -167,7 +194,7 @@ def is_to_create_limit_orders() -> Optional[Tuple[float]]:
 
 
 def compute_stop_limit_prices(
-    tkn_b_account_balance: float,
+    adjusted_tkn_b_account_balance: float,
     stop_limit_step: float,
     proposed_new_stop_limit_prices: List[float],
     existing_limit_price_intervals: Iterable[Tuple[float, float]],
@@ -184,7 +211,7 @@ def compute_stop_limit_prices(
             proposed_new_stop_limit_prices.append(limit_price)
 
     available_balance_for_limit_orders = calculate_available_balance_for_limit_orders(
-        tkn_b_account_balance
+        adjusted_tkn_b_account_balance
     )
     number_of_limits_order_to_create = int(
         available_balance_for_limit_orders
