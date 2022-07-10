@@ -2,6 +2,7 @@ import time
 from typing import Iterable, List, Tuple, Optional, Union
 from bot.models import GeminiOrder, GeminiTrade, OrderActions
 from bot.actions import (
+    cancel_session_orders,
     get_tkn_b_account_balance,
     get_market_prices,
     get_my_trades,
@@ -38,6 +39,14 @@ def _is_time_to_order(last_trade: Union[GeminiTrade, None]) -> bool:
         current_time
         > last_order_time + MINIMUM_SECONDS_TO_PASS_BEFORE_MAKING_MARKET_ORDER
     )
+
+
+def reset_limit_orders_if_insufficient_balance_for_dca():
+    remaining_dca_budget = calculate_remaining_dca_budget_for_month()
+    tkn_b_account_balance: float = get_tkn_b_account_balance(token_b="sgd")
+    if tkn_b_account_balance < remaining_dca_budget:
+        cancel_session_orders()
+        print("Reset limit orders as current balance is insufficient for dca")
 
 
 def is_to_make_market_order() -> bool:

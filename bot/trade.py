@@ -7,7 +7,11 @@ from bot.actions import (
     make_tkn_market_order,
     make_tkn_limit_order,
 )
-from bot.heuristics import is_to_make_market_order, is_to_create_limit_orders
+from bot.heuristics import (
+    is_to_make_market_order,
+    is_to_create_limit_orders,
+    reset_limit_orders_if_insufficient_balance_for_dca,
+)
 from bot import config
 import time
 
@@ -29,6 +33,7 @@ def handle_market_orders():
 
 def handle_limit_orders():
     try:
+        reset_limit_orders_if_insufficient_balance_for_dca()
         limit_order_price_levels: Tuple[float] = is_to_create_limit_orders()
         if limit_order_price_levels:
             tkn_pair = "ETHSGD"
