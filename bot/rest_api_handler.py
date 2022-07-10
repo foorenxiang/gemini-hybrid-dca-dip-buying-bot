@@ -12,6 +12,7 @@ import time
 from string import Template
 from bot.models import GeminiOrder
 from bot.credentials import load_credentials, GeminiCredentials
+from bot.utils import dotenv_path
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,9 @@ logger = logging.getLogger(__name__)
 @lru_cache(None)
 def _get_base_url() -> str:
     environment = (
-        ".sandbox" if dotenv_values(".env")["ENVIRONMENT"].lower() == "sandbox" else ""
+        ".sandbox"
+        if dotenv_values(dotenv_path)["ENVIRONMENT"].lower() == "sandbox"
+        else ""
     )
     base_url = Template("https://api$ENVIRONMENT.gemini.com").substitute(
         ENVIRONMENT=environment

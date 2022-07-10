@@ -1,10 +1,11 @@
 import time
 from dotenv import dotenv_values
 from bot.rest_api_handler import request_private_endpoint
+from bot.utils import dotenv_path
 
 _last_time = None
 
-env_values = dotenv_values(".env")
+env_values = dotenv_values(dotenv_path)
 
 
 def _set_last_heartbeat_time(time: int):
