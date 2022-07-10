@@ -213,14 +213,12 @@ def compute_stop_limit_prices(
     available_balance_for_limit_orders = calculate_available_balance_for_limit_orders(
         adjusted_tkn_b_account_balance
     )
-    number_of_limits_order_to_create = int(
-        available_balance_for_limit_orders
-        / config.stop_limit_amount_per_stop_limit_order
-    )
-    new_stop_limit_prices = tuple(
-        sorted(proposed_new_stop_limit_prices, reverse=True)[
-            :number_of_limits_order_to_create
-        ]
-    )
-
-    return new_stop_limit_prices
+    new_stop_limit_prices = []
+    for proposed_limit_price in sorted(proposed_new_stop_limit_prices, reverse=True):
+        available_balance_for_limit_orders -= (
+            get_limit_order_amount_per_transaction_at_price(proposed_limit_price)
+        )
+        if available_balance_for_limit_orders < 0:
+            break
+        new_stop_limit_prices.append(proposed_limit_price)
+    return tuple(new_stop_limit_prices)
