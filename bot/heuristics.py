@@ -72,6 +72,9 @@ def calculate_remaining_dca_budget_for_month() -> float:
         "Remaining reserved dca budget for calendar month:",
         remaining_dca_budget_for_calendar_month,
     )
+    assert (
+        remaining_dca_budget_for_calendar_month > 0
+    ), "Failed to calculate remaining dca budget"
     return remaining_dca_budget_for_calendar_month
 
 
@@ -79,11 +82,14 @@ def calculate_available_balance_for_limit_orders(tkn_b_account_balance: float) -
     available_balance_for_limit_orders = (
         tkn_b_account_balance - calculate_remaining_dca_budget_for_month()
     )
+    assert (
+        available_balance_for_limit_orders >= 0
+    ), "Failed to correctly calculate available balance for limit orders"
     return available_balance_for_limit_orders
 
 
 def get_limit_order_amount_per_transaction_at_price(order_price: float):
-    return config.limit_order_amount_per_transaction["ETHSGD"][
+    limit_order_amount = config.limit_order_amount_per_transaction["ETHSGD"][
         [
             price
             for price in sorted(
@@ -93,6 +99,10 @@ def get_limit_order_amount_per_transaction_at_price(order_price: float):
             if price <= order_price
         ][0]
     ]
+    assert (
+        limit_order_amount > 0
+    ), f"Failed to calculate limit order amount correctly for ETHSGD at order price {order_price}"
+    return limit_order_amount
 
 
 def get_stop_limit_prices_to_consider(
@@ -147,6 +157,9 @@ def get_stop_limit_prices_to_consider(
         adjusted_tkn_b_account_balance -= limit_order_amount_at_price
 
     stop_limit_prices_to_consider.sort()
+    assert all(
+        stop_limit_prices_to_consider
+    ), "Failed to correctly calculate stop limit prices to consider"
     return (
         adjusted_tkn_b_account_balance,
         stop_limit_prices_to_consider,
