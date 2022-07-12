@@ -45,7 +45,7 @@ def _is_time_to_order(last_trade: Union[GeminiTrade, None]) -> bool:
 def reset_limit_orders_if_insufficient_balance_for_dca():
     remaining_dca_budget = calculate_remaining_dca_budget_for_month()
     tkn_b_account_balance: float = get_tkn_b_account_balance(token_b="sgd")
-    if tkn_b_account_balance < remaining_dca_budget:
+    if tkn_b_account_balance < remaining_dca_budget or remaining_dca_budget < 0:
         cancel_session_orders()
         print("Reset limit orders as current balance is insufficient for dca")
 
@@ -80,9 +80,6 @@ def calculate_remaining_dca_budget_for_month() -> float:
         "Remaining reserved dca budget for calendar month:",
         remaining_dca_budget_for_calendar_month,
     )
-    assert (
-        remaining_dca_budget_for_calendar_month > 0
-    ), "Failed to calculate remaining dca budget"
     return remaining_dca_budget_for_calendar_month
 
 
@@ -90,9 +87,6 @@ def calculate_available_balance_for_limit_orders(tkn_b_account_balance: float) -
     available_balance_for_limit_orders = (
         tkn_b_account_balance - calculate_remaining_dca_budget_for_month()
     )
-    assert (
-        available_balance_for_limit_orders >= 0
-    ), "Failed to correctly calculate available balance for limit orders"
     return available_balance_for_limit_orders
 
 
@@ -234,6 +228,10 @@ def compute_stop_limit_prices(
     available_balance_for_limit_orders = calculate_available_balance_for_limit_orders(
         adjusted_tkn_b_account_balance
     )
+
+    if not available_balance_for_limit_orders:
+        return tuple()
+
     new_stop_limit_prices = []
     for proposed_limit_price in sorted(proposed_new_stop_limit_prices, reverse=True):
         available_balance_for_limit_orders -= (
