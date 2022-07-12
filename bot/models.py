@@ -62,3 +62,10 @@ class GeminiBalance(BaseModel):
     amount: float
     available: float
     availableForWithdrawal: float
+
+
+class MeanTradePrice(BaseModel):
+    mean_price: float
+    number_of_trades: int
+    tkn_a_bought: float
+    tkn_b_spent: float

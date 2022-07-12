@@ -7,6 +7,7 @@ from bot.models import (
     MarketPrices,
     OrderActions,
     GeminiBalance,
+    MeanTradePrice,
 )
 from bot.rest_api_handler import (
     compute_payload_nonce,
@@ -312,14 +313,14 @@ def get_mean_trade_price(
     trades: Tuple[GeminiTrade],
     token_pair: str = "ethsgd",
     verbose=True,
-) -> Optional[Tuple[float, int, float, float]]:
+) -> MeanTradePrice:
     token_pair_stores = get_mean_trade_prices(trades, verbose)
     token_pair_store: TokenPairMeanTradeStore = token_pair_stores[token_pair.upper()]
-    return (
-        token_pair_store.average_price,
-        token_pair_store.number_of_trades,
-        token_pair_store.tkn_a_bought,
-        token_pair_store.tkn_b_spent,
+    return MeanTradePrice(
+        mean_price=token_pair_store.average_price,
+        number_of_trades=token_pair_store.number_of_trades,
+        tkn_a_bought=token_pair_store.tkn_a_bought,
+        tkn_b_spent=token_pair_store.tkn_b_spent,
     )
 
 
