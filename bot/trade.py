@@ -8,7 +8,7 @@ from bot.actions import (
     make_tkn_limit_order,
 )
 from bot.heuristics import (
-    is_to_make_market_order,
+    is_to_make_dca_market_order,
     is_to_create_limit_orders,
     reset_limit_orders_if_insufficient_balance_for_dca,
 )
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def handle_market_orders():
     try:
-        if is_to_make_market_order():
+        if is_to_make_dca_market_order():
             new_market_order: GeminiOrder = make_tkn_market_order(
                 tkn_pair="ethsgd",
                 tkn_b_sell_qty=config.dca_amount_per_transaction,

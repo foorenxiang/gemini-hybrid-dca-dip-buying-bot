@@ -1,3 +1,4 @@
+from tabnanny import verbose
 import time
 from typing import Iterable, List, Tuple, Optional, Union
 from bot.models import GeminiOrder, GeminiTrade, OrderActions
@@ -7,6 +8,7 @@ from bot.actions import (
     get_market_prices,
     get_my_trades,
     get_open_orders_by_decreasing_price,
+    get_mean_trade_price,
 )
 from bot.utils import get_day_of_month_and_days_in_month
 from bot import config
@@ -49,8 +51,15 @@ def reset_limit_orders_if_insufficient_balance_for_dca():
         print("Reset limit orders as current balance is insufficient for dca")
 
 
-def is_to_make_market_order() -> bool:
-    all_trades: Tuple[GeminiTrade] = get_my_trades(symbol="ethsgd")
+def is_to_make_dca_market_order() -> bool:
+    token_pair = "ethsgd"
+    all_trades: Tuple[GeminiTrade] = get_my_trades(symbol=token_pair)
+    mean_trade_price = get_mean_trade_price(
+        all_trades, token_pair=token_pair, verbose=False
+    )
+    if mean_trade_price > get_market_prices(token_pair).ask_price:
+        decision = False
+        return decision
     purchase_trades = [trade for trade in all_trades if trade.type == OrderActions.BUY]
     print("Determining if DCA market order should be made")
     last_trade: Optional[GeminiTrade] = purchase_trades[0] if purchase_trades else None
