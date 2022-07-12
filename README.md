@@ -42,4 +42,7 @@ sudo service gemini_bot_service status # check the status of the gemini bot
 sudo systemctl start gemini_bot_service # start the bot as a service
 sudo systemctl stop gemini_bot_service # stop the bot as a service
 sudo journalctl -u gemini_bot_service # see output logs of the service
+sudo journalctl -u gemini_bot_service -n 50 # see last 50 logs
+sudo journalctl -u gemini_bot_service -n 50 -f # see last 50 logs and follow new logs
+sudo journalctl -u gemini_bot_service -n 200 -r # see last 200 logs in reverse chronological order
 ```
