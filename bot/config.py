@@ -74,6 +74,8 @@ market_order_price_percentage_delta_to_highest_limit_order: float = 1.05
 market_order_price_percentage_delta_to_last_trade_price: float = 1.2
 market_order_aggressiveness_factor: float = 1.3
 
+backup_trades_to_db: bool = True
+
 
 max_limit_order_price: Dict[str, float] = {
     tkn_pair: max(limit_order_amount_per_transaction[tkn_pair])

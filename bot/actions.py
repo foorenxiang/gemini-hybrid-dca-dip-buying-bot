@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
+from functools import lru_cache
+import traceback
 from typing import Dict, Iterable, List, Optional, Tuple
 from bot.models import (
     GeminiOrder,
@@ -16,6 +18,11 @@ from bot.rest_api_handler import (
     cast_response_to_gemini_order,
 )
 from bot import config
+
+if config.backup_trades_to_db:
+    from bot.db.main import retrieve_stored_trades, write_trades_to_db
+
+run_once = lru_cache(maxsize=1)
 
 
 def cancel_session_orders() -> bool:
@@ -107,7 +114,9 @@ def _cast_to_gemini_trade(trade_record: dict) -> GeminiTrade:
     )
 
 
-def get_my_trades(limit_trades: int = 500, symbol="ethsgd") -> Tuple[GeminiTrade]:
+def get_my_latest_trades(
+    limit_trades: int = 500, symbol="ethsgd"
+) -> Tuple[GeminiTrade]:
     endpoint = "/v1/mytrades"
     payload = {
         "request": endpoint,
@@ -130,6 +139,41 @@ def get_my_trades(limit_trades: int = 500, symbol="ethsgd") -> Tuple[GeminiTrade
         sorted(trades, key=lambda order: order.timestampms, reverse=True)
     )
     return trades_in_reverse_chronological_order
+
+
+def _create_dictionary_of_trades(trades: Tuple[GeminiTrade]) -> Dict[int, GeminiTrade]:
+    return {trade.tid: trade for trade in trades}
+
+
+@run_once
+def _initialise_local_trades_cache():
+    global local_trades_record_cache
+    local_trades_record_cache = _create_dictionary_of_trades(retrieve_stored_trades())
+
+
+def _write_new_trades_to_db(trades: Tuple[GeminiTrade]):
+    global local_trades_record_cache
+    trades_to_be_stored_to_db: Iterable[GeminiTrade] = (
+        trade for trade in trades if trade.tid not in local_trades_record_cache
+    )
+    write_trades_to_db(trades_to_be_stored_to_db)
+
+
+def _update_local_trades_cache_after_sync_to_db(trades: Tuple[GeminiTrade]):
+    global local_trades_record_cache
+    local_trades_record_cache.update(_create_dictionary_of_trades(trades))
+
+
+def sync_db_with_new_trades(trades: Tuple[GeminiTrade]):
+    if not config.backup_trades_to_db:
+        return
+    try:
+        _initialise_local_trades_cache()
+        _write_new_trades_to_db(trades)
+        _update_local_trades_cache_after_sync_to_db(trades)
+    except Exception:
+        print("Failed to sync trades to db")
+        traceback.print_exc()
 
 
 def make_tkn_market_order(
@@ -328,7 +372,7 @@ if __name__ == "__main__":
     from pprint import pprint
 
     print("Get all my trades")
-    my_trades = get_my_trades(symbol="ethsgd")
+    my_trades = get_my_latest_trades(symbol="ethsgd")
     print(f"{len(my_trades)} trades found")
     pprint(my_trades)
     print("Open orders:")

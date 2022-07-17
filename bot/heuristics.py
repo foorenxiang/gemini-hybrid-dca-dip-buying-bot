@@ -5,9 +5,10 @@ from bot.actions import (
     cancel_session_orders,
     get_tkn_b_account_balance,
     get_market_prices,
-    get_my_trades,
+    get_my_latest_trades,
     get_open_orders_by_decreasing_price,
     get_mean_trade_price,
+    sync_db_with_new_trades,
 )
 from bot.utils import get_day_of_month_and_days_in_month
 from bot import config
@@ -50,9 +51,19 @@ def reset_limit_orders_if_insufficient_balance_for_dca():
         print("Reset limit orders as current balance is insufficient for dca")
 
 
+def get_latest_trade_and_update_db(token_pair: str) -> Tuple[GeminiTrade]:
+    all_trades: Tuple[GeminiTrade] = get_my_latest_trades(symbol=token_pair)
+    if config.backup_trades_to_db:
+        print("Syncing latest trades to db...")
+        sync_db_with_new_trades(all_trades)
+    else:
+        print("DB not configured, not syncing latest trades to db...")
+    return all_trades
+
+
 def is_to_make_dca_market_order() -> bool:
     token_pair = "ethsgd"
-    all_trades: Tuple[GeminiTrade] = get_my_trades(symbol=token_pair)
+    all_trades = get_latest_trade_and_update_db(token_pair)
     average_price_bought = get_mean_trade_price(
         all_trades, token_pair=token_pair, verbose=False
     ).mean_price
