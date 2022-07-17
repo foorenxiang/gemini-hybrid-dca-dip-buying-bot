@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Float, Integer, String, BigInteger
+from sqlalchemy import Boolean, Column, Float, String, BigInteger
 from sqlalchemy.orm import declarative_base
 from bot.db.engine import engine
 
@@ -15,7 +15,7 @@ class SQLTrade(Base):
     aggressor = Column(Boolean, nullable=False)
     fee_currency = Column(String, nullable=False)
     fee_amount = Column(Float, nullable=False)
-    tid = Column(Integer, primary_key=True, nullable=False)
+    tid = Column(BigInteger, primary_key=True, nullable=False)
     order_id = Column(BigInteger, nullable=False)
     exchange = Column(String, nullable=False)
     is_auction_fill = Column(Boolean, nullable=False)
