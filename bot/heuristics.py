@@ -63,13 +63,8 @@ def get_latest_trade_and_update_db(token_pair: str) -> Tuple[GeminiTrade]:
 
 def is_to_make_dca_market_order() -> bool:
     token_pair = "ethsgd"
+    # TODO: add trades only present in local cache as well
     all_trades = get_latest_trade_and_update_db(token_pair)
-    average_price_bought = get_mean_trade_price(
-        all_trades, token_pair=token_pair, verbose=False
-    ).mean_price
-    if get_market_prices(token_pair).ask_price > average_price_bought:
-        decision = False
-        return decision
     purchase_trades = [trade for trade in all_trades if trade.type == OrderActions.BUY]
     print("Determining if DCA market order should be made")
     last_trade: Optional[GeminiTrade] = purchase_trades[0] if purchase_trades else None
