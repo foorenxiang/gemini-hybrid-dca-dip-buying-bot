@@ -46,23 +46,22 @@ market_prices_cache: Dict[str, MarketPrices] = {}
 trade_loop_delay_in_seconds = 5
 
 # User config values
-monthly_reserved_amount_for_dca: float = 1000
+monthly_reserved_amount_for_dca: float = 1500
 dca_amount_per_transaction: float = 2.5  # in token_b_value
 ENABLE_LIMIT_ORDERS: bool = True
 tkn_pair_min_order_amount: Dict[str, float] = {
     "ETHSGD": 10**-3
 }  # https://docs.gemini.com/rest-api/#basis-point
 stop_limit_step: Dict[str, float] = {"SGD": 50, "ETH": 0.01, "BTC": 0.001}
-limit_order_budget_per_month: float = 500  # in token_b_value
+limit_order_budget_per_month: float = 500  # in token_b_value # TODO: implement
 limit_order_amount_per_transaction: Dict[
     str, Union[float, Dict[float, float]]
 ] = {  # in token_b_value
     "ETHSGD": {
         1: 50,
-        1500: 25,
-        2500: 10,
-        5000: 5,
-        10000: 2.5,
+        1900: 25,
+        6000: 10,
+        10000: 5,
     },
     "BTCSGD": {},
 }
