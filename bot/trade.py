@@ -11,6 +11,7 @@ from bot.heuristics import (
     is_to_make_dca_market_order,
     is_to_create_limit_orders,
     reset_limit_orders_if_insufficient_balance_for_dca,
+    get_limit_order_amount_per_transaction_at_price,
 )
 from bot import config
 import time
@@ -39,7 +40,7 @@ def handle_limit_orders():
             tkn_pair = "ETHSGD"
             for tkn_a_limit_price in limit_order_price_levels:
                 tkn_b_sell_quantity: float = (
-                    config.stop_limit_amount_per_stop_limit_order
+                    get_limit_order_amount_per_transaction_at_price(tkn_a_limit_price)
                 )
                 new_limit_order: GeminiOrder = make_tkn_limit_order(
                     tkn_pair=tkn_pair,

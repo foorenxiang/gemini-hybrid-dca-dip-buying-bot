@@ -7,7 +7,6 @@ from bot.actions import (
     get_market_prices,
     get_my_latest_trades,
     get_open_orders_by_decreasing_price,
-    get_mean_trade_price,
     sync_db_with_new_trades,
 )
 from bot.utils import get_day_of_month_and_days_in_month
