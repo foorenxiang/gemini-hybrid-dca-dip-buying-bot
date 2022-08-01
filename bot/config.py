@@ -46,6 +46,7 @@ market_prices_cache: Dict[str, MarketPrices] = {}
 trade_loop_delay_in_seconds = 5
 
 # User config values
+ENABLE_DCA_SELLING = False
 monthly_reserved_amount_for_dca: float = 1500
 dca_amount_per_transaction: float = 2.5  # in token_b_value
 ENABLE_LIMIT_ORDERS: bool = True
