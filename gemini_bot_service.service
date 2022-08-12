@@ -5,7 +5,7 @@ After=multi-user.target
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/python3 /home/foorx/gemini-hybrid-dca-dip-buying-bot/__main__.py
+ExecStart=/usr/bin/python3 -u /home/foorx/gemini-hybrid-dca-dip-buying-bot/__main__.py
 
 [Install]
 WantedBy=multi-user.target
